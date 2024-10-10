@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Clients</title>
+    <!-- Include Bootstrap CSS for styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #e9ecef;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 40px;
+            margin-top: 70px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+        }
+        h2 {
+            font-size: 26px;
+            font-weight: bold;
+            text-align: center;
+            color: #495057;
+            margin-bottom: 25px;
+        }
+        label {
+            font-weight: 600;
+            color: #495057;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #218838;
+        }
+        /* Subtle animation */
+        .container {
+            animation: fadeInUp 0.5s ease-in-out;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Request Client Data</h2>
+        <form action="/request_clients" method="POST">
+            <div class="form-group">
+                <label for="client_ids">Enter Client IDs (comma-separated):</label>
+                <input type="text" name="client_ids" id="client_ids" class="form-control" placeholder="OR0050810, OR0050811, ..." required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+        </form>
+        <a href="/worker_dashboard">Back to Dashboard</a>
+    </div>
+</body>
+</html>

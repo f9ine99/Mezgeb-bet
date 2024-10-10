@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <!-- Include Bootstrap 5 CSS for modern styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Include DataTables Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 80px;
+            --transition-duration: 0.3s;
+            --bg-color: #343a40;
+            --bg-color-collapsed: #23272b;
+            --text-color: #adb5bd;
+            --text-color-active: #fff;
+            --header-bg-color: #23272b;
+            --card-bg-color: #fff;
+            --card-header-bg-color: #0d6efd;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color var(--transition-duration), color var(--transition-duration);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100vh;
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--bg-color);
+            padding-top: 60px;
+            transition: width var(--transition-duration), left var(--transition-duration);
+            overflow: hidden;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 60px;
+            background-color: var(--header-bg-color);
+        }
+
+        .sidebar .sidebar-header .logo {
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .sidebar-header .logo i {
+            margin-right: 8px;
+        }
+
+        .sidebar .sidebar-header .toggle-btn {
+            font-size: 1.2rem;
+            color: #fff;
+            cursor: pointer;
+            outline: none;
+            border: none;
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform var(--transition-duration);
+        }
+
+        .sidebar .sidebar-header .toggle-btn:focus {
+            outline: none;
+        }
+
+        .sidebar .sidebar-header .toggle-btn.rotate {
+            transform: rotate(180deg);
+        }
+
+        .sidebar .user-profile {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #495057;
+            position: relative;
+        }
+
+        .sidebar .user-profile img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .sidebar .user-profile .username {
+            color: #2f6ca6;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .user-profile .username {
+            color:#0d6efd;
+        }
+
+        .sidebar .user-profile .notification-badge {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background-color: #dc3545;
+            color: #fff;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            display: none; /* Hide badge when sidebar is collapsed */
+        }
+
+        .sidebar a {
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 1rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            transition: background var(--transition-duration), color var(--transition-duration);
+            position: relative;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #495057;
+            color: var(--text-color-active);
+        }
+
+        .sidebar a i {
+            margin-right: 15px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed a span {
+            display: none;
+        }
+
+        .sidebar.collapsed a i {
+            margin-right: 0;
+        }
+
+        /* Nested Menu Styles */
+        .sidebar .submenu {
+            display: none;
+            background-color: #3e444a;
+            transition: max-height var(--transition-duration);
+            overflow: hidden;
+        }
+
+        .sidebar .submenu a {
+            padding-left: 40px;
+            font-size: 0.9rem;
+        }
+
+        .sidebar .has-submenu > a::after {
+            content: '\f0da'; /* Font Awesome chevron-down icon */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            margin-left: auto;
+            transition: transform var(--transition-duration);
+        }
+
+        .sidebar .has-submenu.open > a::after {
+            transform: rotate(180deg);
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .sidebar {
+            background-color: #1f1f1f;
+        }
+
+        body.dark-mode .sidebar .sidebar-header {
+            background-color: #2c2c2c;
+        }
+
+        body.dark-mode .sidebar a {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .sidebar a:hover, 
+        body.dark-mode .sidebar a.active {
+            background-color: #333333;
+            color: #ffffff;
+        }
+
+        body.dark-mode .user-profile .username {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .card {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .card-header {
+            background-color: #2c2c2c;
+        }
+
+        body.dark-mode .table-dark th {
+            background-color: #3a3a3a;
+        }
+
+        body.dark-mode .alert-info {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border-color: #444444;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: margin-left var(--transition-duration);
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        /* Toggle Sidebar Button Styles */
+        .toggle-sidebar-btn {
+            top: 15px;
+            left: calc(var(--sidebar-width) + 15px);
+            font-size: 1.5rem;
+            color: #343a40;
+            cursor: pointer;
+            transition: left var(--transition-duration);
+            z-index: 1000;
+            background: none;
+            border: none;
+            outline: none;
+        }
+
+        .sidebar.collapsed + .main-content .toggle-sidebar-btn {
+            left: calc(var(--sidebar-collapsed-width) + 15px);
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: #0970d8;
+        }
+
+        /* Filter Form Styles */
+        .filter-form .form-group {
+            margin-right: 15px;
+        }
+
+        /* Tooltip Styles */
+        .tooltip-inner {
+            background-color: #343a40;
+            color: #fff;
+            font-size: 0.875rem;
+        }
+
+        .tooltip.bs-tooltip-right .arrow::before, 
+        .tooltip.bs-tooltip-left .arrow::before {
+            border-right-color: #343a40;
+            border-left-color: #343a40;
+        }
+
+        /* Logout Button Styles */
+        .logout-btn {
+            margin-top: auto; /* Push to the bottom */
+            margin-bottom: 20px;
+        }
+
+        .logout-btn a {
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 1rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            transition: background var(--transition-duration), color var(--transition-duration);
+        }
+
+        .logout-btn a:hover {
+            background-color: #495057;
+            color: var(--text-color-active);
+        }
+
+        .logout-btn a i {
+            margin-right: 15px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .logout-btn a span {
+            display: none;
+        }
+
+        .sidebar.collapsed .logout-btn a i {
+            margin-right: 0;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 80px;
+                --sidebar-collapsed-width: 0;
+            }
+
+            .sidebar {
+                left: -250px;
+                width: 250px;
+            }
+
+            .sidebar.collapsed {
+                left: 0;
+                width: 250px;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar.collapsed + .main-content {
+                margin-left: 250px;
+            }
+
+            .toggle-sidebar-btn {
+                left: 15px;
+            }
+
+            .sidebar.collapsed + .main-content .toggle-sidebar-btn {
+                left: 265px;
+            }
+
+            .sidebar .sidebar-header .logo span {
+                display: none;
+            }
+
+            .sidebar .user-profile {
+                padding: 10px;
+            }
+
+            .sidebar .user-profile .username {
+                font-size: 0.9rem;
+            }
+
+            .sidebar a span {
+                display: none;
+            }
+
+            .sidebar.collapsed a span {
+                display: none;
+            }
+
+            .sidebar.collapsed .notification-badge {
+                display: none;
+            }
+
+            .logout-btn {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar" aria-label="Sidebar Navigation">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span class="d-none d-md-inline">AdminPanel</span>
+            </div>
+            <button class="toggle-btn" id="collapseSidebar" aria-label="Collapse Sidebar" aria-expanded="true">
+                <i class="fas fa-angle-left"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <a href="{{ url_for('admin_dashboard') }}" class="active" aria-current="page" data-bs-toggle="tooltip" data-bs-placement="right" title="Dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+        </div>
+        <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="About">
+            <i class="fas fa-info-circle"></i>
+            <span>About</span>
+        </a>
+        <a href="#" data-bs-toggle="tooltip" data-bs-placement="right" title="Help">
+            <i class="fas fa-question-circle"></i>
+            <span>Help</span>
+        </a>
+        <!-- Dark Mode Toggle -->
+        <a href="#" id="darkModeToggle" data-bs-toggle="tooltip" data-bs-placement="right" title="Toggle Dark Mode">
+          <i class="fas fa-moon"></i>
+          <span class="d-none d-md-inline">Dark Mode</span>
+        </a>
+        
+        <!-- Logout Button -->
+        <div class="logout-btn">
+            <a href="{{ url_for('logout') }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent" tabindex="-1">
+        <!-- Toggle Sidebar Button -->
+        <button class="toggle-sidebar-btn" id="toggleSidebar" aria-label="Toggle Sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p class="text-muted">Welcome, {{ session['admin_id'] }}</p>
+            </div>
+        </div>
+
+        <!-- Activity Log Section -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Activity Log</h5>
+                <!-- Optional: Add buttons or filters here -->
+            </div>
+            <div class="card-body">
+                <!-- Filter Form -->
+                <form method="GET" class="row g-3 filter-form">
+                    <div class="col-md-2">
+                        <label for="start_date" class="form-label">Start Date:</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="end_date" class="form-label">End Date:</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="user_role" class="form-label">User Role:</label>
+                        <select id="user_role" name="user_role" class="form-select">
+                            <option value="" {% if not user_role %}selected{% endif %}>All</option>
+                            <option value="worker" {% if user_role == 'worker' %}selected{% endif %}>Worker</option>
+                            <option value="provider" {% if user_role == 'provider' %}selected{% endif %}>Provider</option>
+                            <option value="admin" {% if user_role == 'admin' %}selected{% endif %}>Admin</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="username" class="form-label">Username:</label>
+                        <input type="text" id="username" name="username" class="form-control" placeholder="Username" value="{{ username }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="action_type" class="form-label">Action Type:</label>
+                        <input type="text" id="action_type" name="action_type" class="form-control" placeholder="Action Type" value="{{ action_type }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="filter_type" class="form-label">Filter By:</label>
+                        <select id="filter_type" name="filter" class="form-select">
+                            <option value="" {% if not filter_type %}selected{% endif %}>All Activities</option>
+                            <option value="daily_activity" {% if filter_type == 'daily_activity' %}selected{% endif %}>Today's Activity</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="client_id" class="form-label">Client ID:</label>
+                        <input type="text" id="client_id" name="client_id" class="form-control" placeholder="Client ID" value="{{ client_id }}">
+                    </div>
+                    <div class="col-md-12 text-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-redo me-1"></i> Reset
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                            {% for message in messages %}
+                                <p class="mb-0">{{ message }}</p>
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Activity Log Table -->
+                <div class="table-responsive mt-4">
+                    <table id="activityTable" class="table table-striped table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Activity ID</th>
+                                <th>Timestamp</th>
+                                <th>User Role</th>
+                                <th>Username</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transfer in transfers %}
+                            <tr>
+                                <td>{{ transfer.id }}</td>
+                                <td class="timestamp">{{ transfer.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ transfer.user_role.capitalize() }}</td>
+                                <td>{{ transfer.username }}</td>
+                                <td>{{ transfer.action }}</td>
+                                <td>{{ transfer.details or "N/A" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center mt-3">
+                        {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin_dashboard', page=pagination.prev_num, start_date=start_date, end_date=end_date, user_role=user_role, username=username, action_type=action_type) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in pagination.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num == pagination.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin_dashboard', page=page_num, start_date=start_date, end_date=end_date, user_role=user_role, username=username, action_type=action_type) }}">{{ page_num }}</a>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin_dashboard', page=pagination.next_num, start_date=start_date, end_date=end_date, user_role=user_role, username=username, action_type=action_type) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap 5 JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Include jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include DataTables Bootstrap 5 JS -->
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Include Day.js for date formatting -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.7/dayjs.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const sidebar = $('#sidebar');
+            const toggleSidebarBtn = $('#toggleSidebar');
+            const collapseSidebarBtn = $('#collapseSidebar');
+            const darkModeToggle = $('#darkModeToggle');
+
+            // Function to toggle sidebar
+            function toggleSidebar() {
+                sidebar.toggleClass('collapsed');
+                $('.main-content').toggleClass('collapsed');
+                toggleSidebarBtn.find('i').toggleClass('fa-bars fa-times');
+                collapseSidebarBtn.find('i').toggleClass('fa-angle-left fa-angle-right');
+
+                // Save sidebar state to localStorage
+                if (sidebar.hasClass('collapsed')) {
+                    localStorage.setItem('sidebar-collapsed', 'true');
+                } else {
+                    localStorage.setItem('sidebar-collapsed', 'false');
+                }
+            }
+
+            // Event listeners for toggle buttons
+            toggleSidebarBtn.on('click', toggleSidebar);
+            collapseSidebarBtn.on('click', toggleSidebar);
+
+            // Load sidebar state from localStorage
+            if (localStorage.getItem('sidebar-collapsed') === 'true') {
+                sidebar.addClass('collapsed');
+                $('.main-content').addClass('collapsed');
+                toggleSidebarBtn.find('i').removeClass('fa-bars').addClass('fa-times');
+                collapseSidebarBtn.find('i').removeClass('fa-angle-left').addClass('fa-angle-right');
+            }
+
+            // Toggle Submenus
+            $('.has-submenu > a').on('click', function(e) {
+                e.preventDefault();
+                const parent = $(this).parent();
+                parent.toggleClass('open');
+                parent.find('.submenu').slideToggle();
+
+                // Close other open submenus
+                $('.has-submenu').not(parent).removeClass('open').find('.submenu').slideUp();
+
+                // Update ARIA attributes
+                const expanded = parent.hasClass('open');
+                $(this).attr('aria-expanded', expanded);
+            });
+
+            // Dark Mode Toggle
+            darkModeToggle.on('click', function(e) {
+                e.preventDefault();
+                $('body').toggleClass('dark-mode');
+                // Change icon based on mode
+                $(this).find('i').toggleClass('fa-moon fa-sun');
+                // Update ARIA label
+                const isDark = $('body').hasClass('dark-mode');
+                $(this).attr('aria-label', isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+                // Store preference in localStorage
+                if (isDark) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // Apply saved theme on load
+            if (localStorage.getItem('theme') === 'dark') {
+                $('body').addClass('dark-mode');
+                darkModeToggle.find('i').removeClass('fa-moon').addClass('fa-sun');
+                darkModeToggle.attr('aria-label', 'Switch to Light Mode');
+            } else {
+                darkModeToggle.find('i').removeClass('fa-sun').addClass('fa-moon');
+                darkModeToggle.attr('aria-label', 'Switch to Dark Mode');
+            }
+
+            // Initialize DataTable with Bootstrap 5 styling
+            $('#activityTable').DataTable({
+                "order": [[ 1, "desc" ]],
+                "pageLength": 25,
+                "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+                "columnDefs": [
+                    { "orderable": true, "targets": [0,1,2,3,4,5] }
+                ],
+                "language": {
+                    "search": "Search Activities:",
+                    "paginate": {
+                        "previous": "&laquo;",
+                        "next": "&raquo;"
+                    }
+                },
+                "responsive": true
+            });
+
+            // Format timestamps using Day.js
+            $('.timestamp').each(function() {
+                var timestampText = $(this).text();
+                var date = dayjs(timestampText);
+                if (date.isValid()) {
+                    var formattedDate = date.format('MMMM D, YYYY h:mm A');
+                    $(this).text(formattedDate);
+                }
+            });
+
+            // Initialize Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+              return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+        });
+
+        // Accessibility Enhancements
+        document.addEventListener('keydown', function(event) {
+            // Allow toggle with Enter or Space keys
+            if ((event.key === 'Enter' || event.key === ' ') && 
+                (event.target.id === 'toggleSidebar' || event.target.id === 'collapseSidebar' || event.target.id === 'darkModeToggle')) {
+                event.preventDefault();
+                event.target.click();
+            }
+        });
+    </script>
+</body>
+</html>
